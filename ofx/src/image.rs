@@ -430,7 +430,7 @@ where
 	}
 
 	#[inline]
-	fn byte_offset(&self, x: Int, y: Int) -> isize {
+	pub fn byte_offset(&self, x: Int, y: Int) -> isize {
 		(y - self.bounds.y1) as isize * self.row_bytes + (x - self.bounds.x1) as isize
 	}
 
@@ -453,14 +453,14 @@ where
 		self.t_size
 	}
 
-	fn ptr(&self, offset: isize) -> *const u8 {
+	pub fn ptr(&self, offset: isize) -> *const u8 {
 		unsafe {
 			let ptr: *const u8 = &*self.data;
 			ptr.offset(offset)
 		}
 	}
 
-	fn ptr_mut(&mut self, offset: isize) -> *mut u8 {
+	pub fn ptr_mut(&mut self, offset: isize) -> *mut u8 {
 		unsafe {
 			let ptr: *mut u8 = &mut *self.data;
 			ptr.offset(offset)
@@ -601,6 +601,10 @@ where
 		}
 	}
 
+	pub fn data(&self) -> ImageBuffer<T> {
+		self.data.clone()
+	}
+
 	pub fn row(&self, y: Int) -> &[T] {
 		self.data.row(y)
 	}
@@ -623,6 +627,10 @@ where
 
 	pub fn row(&mut self, y: Int) -> &mut [T] {
 		self.data.row_mut(y)
+	}
+
+	pub fn data(&mut self) -> ImageBuffer<T> {
+		self.data.clone()
 	}
 
 	pub fn row_range(&mut self, x1: Int, x2: Int, y: Int) -> &mut [T] {
