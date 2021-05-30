@@ -434,7 +434,7 @@ where
 		(y - self.bounds.y1) as isize * self.row_bytes + (x - self.bounds.x1) as isize
 	}
 
-	fn bounds(&self) -> RectI {
+	pub fn bounds(&self) -> RectI {
 		self.bounds
 	}
 
@@ -442,7 +442,7 @@ where
 		self.row_bytes.abs() as usize * (self.bounds.y2 - self.bounds.y1) as usize
 	}
 
-	fn dimensions(&self) -> (u32, u32) {
+	pub fn dimensions(&self) -> (u32, u32) {
 		(
 			(self.bounds.x2 - self.bounds.x1) as u32,
 			(self.bounds.y2 - self.bounds.y1) as u32,
