@@ -166,6 +166,16 @@ identified_enum! {
 }
 
 identified_enum! {
+	pub enum ParamStringType {
+		SingleLine => kOfxParamStringIsSingleLine,
+		MultiLine => kOfxParamStringIsMultiLine,
+		FilePath => kOfxParamStringIsFilePath,
+		DirectoryPath => kOfxParamStringIsDirectoryPath,
+		Label => kOfxParamStringIsLabel
+	}
+}
+
+identified_enum! {
 	pub enum ImageField {
 		None,
 		Both,

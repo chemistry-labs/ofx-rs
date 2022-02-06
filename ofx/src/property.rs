@@ -3,9 +3,11 @@
 use enums::{
 	BitDepth, Change, HostNativeOrigin, IdentifiedEnum, ImageComponent, ImageEffectContext,
 	ImageEffectRender, ImageField, ImageFieldExtraction, ImageFieldOrder, ParamDoubleType,
+	ParamStringType,
 	Type as EType,
 };
 use handle::Image;
+use handle::ParamString;
 use handle::*;
 use ofx_sys::*;
 use result;
@@ -1106,6 +1108,11 @@ pub mod boolean {
 	property_assign_name!(kOfxParamPropDefault as Default: Bool);
 }
 
+pub mod string {
+	use super::*;
+	property_assign_name!(kOfxParamPropStringMode as StringType: (&[u8]) -> CString);
+}
+
 pub mod page {
 	use super::*;
 	property_assign_name!(kOfxParamPropPageChild as Child: (&str) -> String);
@@ -1166,6 +1173,16 @@ pub mod BooleanParams {
 }
 
 pub use BooleanParams::CanSet as CanSetBooleanParams;
+
+#[allow(non_snake_case)]
+pub mod StringParams {
+	use super::*;
+	pub trait CanSet: Writable {
+		property_define_setter_trait!(set_string_type, string::StringType, enum ParamStringType);
+	}
+}
+
+pub use StringParams::CanSet as CanSetStringParams;
 
 impl<T> CommonParameters for ParamHandle<T> where T: ParamHandleValue + Clone {}
 
@@ -1317,6 +1334,11 @@ object_properties! { ParamDouble {
 object_properties! { ParamBoolean {
 	CommonParameters			inherit,
 	BooleanParams				write,
+}}
+
+object_properties! { ParamString {
+	CommonParameters			inherit,
+	StringParams				write,
 }}
 
 object_properties! { ParamPage {

@@ -8,6 +8,7 @@ use std::cell::RefCell;
 use std::ffi::{CStr, CString};
 use std::fmt;
 use std::marker::PhantomData;
+use std::os::raw::c_char;
 use std::rc::Rc;
 use types::*;
 
@@ -79,6 +80,7 @@ pub trait ParamHandleValue: Default + Clone {}
 impl ParamHandleValue for Int {}
 impl ParamHandleValue for Bool {}
 impl ParamHandleValue for Double {}
+impl ParamHandleValue for String {}
 
 pub trait ParamHandleValueDefault: ParamHandleValue + Default {}
 impl ParamHandleValueDefault for Int {}
@@ -186,6 +188,28 @@ impl ParamHandle<Bool> {
 		let mut value: Int = 0;
 		suite_fn!(paramGetValueAtTime in self.parameter; self.inner, time, &mut value as *mut Int)?;
 		Ok(value != 0)
+	}
+}
+
+impl ParamHandle<String> {
+	pub fn get_value(&self) -> Result<String> {
+		let mut value: CharPtr = std::ptr::null();
+		suite_fn!(paramGetValue in self.parameter; self.inner, &mut value as *mut CharPtr)?;
+		if value.is_null() {
+			Ok(String::new())
+		} else {
+			unsafe { std::ffi::CStr::from_ptr(value) }.to_str().map(|s| s.to_owned()).map_err(|e| e.into())
+		}
+	}
+
+	pub fn get_value_at_time(&self, time: Time) -> Result<String> {
+		let mut value: CharPtr = std::ptr::null();
+		suite_fn!(paramGetValueAtTime in self.parameter; self.inner, time, &mut value as *mut CharPtr)?;
+		if value.is_null() {
+			Ok(String::new())
+		} else {
+			unsafe { std::ffi::CStr::from_ptr(value) }.to_str().map(|s| s.to_owned()).map_err(|e| e.into())
+		}
 	}
 }
 
@@ -411,6 +435,7 @@ properties_newtype!(EndSequenceRenderInArgs);
 properties_newtype!(ParamDouble);
 properties_newtype!(ParamInt);
 properties_newtype!(ParamBoolean);
+properties_newtype!(ParamString);
 properties_newtype!(ParamPage);
 properties_newtype!(ParamGroup);
 
@@ -637,6 +662,10 @@ impl ParamSetHandle {
 
 	pub fn param_define_boolean(&mut self, name: &str) -> Result<ParamBoolean> {
 		self.param_define(ParamType::Boolean, name)
+	}
+
+	pub fn param_define_string(&mut self, name: &str) -> Result<ParamString> {
+		self.param_define(ParamType::String, name)
 	}
 
 	pub fn param_define_group(&mut self, name: &str) -> Result<ParamGroup> {
