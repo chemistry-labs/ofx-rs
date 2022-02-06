@@ -438,7 +438,11 @@ where
 		self.bounds
 	}
 
-	fn bytes(&self) -> usize {
+	pub fn stride_bytes(&self) -> isize {
+		self.row_bytes
+	}
+
+	pub fn bytes(&self) -> usize {
 		self.row_bytes.abs() as usize * (self.bounds.y2 - self.bounds.y1) as usize
 	}
 
