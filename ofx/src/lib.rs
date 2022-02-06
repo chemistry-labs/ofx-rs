@@ -1,6 +1,6 @@
 #![allow(unused)]
 #![feature(concat_idents)]
-#![feature(specialization)]
+#![feature(min_specialization)]
 
 extern crate ofx_sys;
 #[macro_use]
