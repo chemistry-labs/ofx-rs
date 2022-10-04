@@ -982,6 +982,36 @@ property! { kOfxImageEffectPropOpenGLRenderSupported as OpenGLRenderSupported {
 	set_opengl_render_supported(Bool);
 }}
 
+property! { kOfxImageEffectPropOpenCLRenderSupported as OpenCLRenderSupported {
+	get_opencl_render_supported() -> String;
+	set_opencl_render_supported(&str);
+}}
+property! { kOfxImageEffectPropOpenCLEnabled as OpenCLEnabled {
+	get_opencl_enabled() -> Bool;
+}}
+property! { kOfxImageEffectPropOpenCLCommandQueue as OpenCLCommandQueue {
+	get_opencl_command_queue() -> VoidPtrMut;
+}}
+
+property! { kOfxImageEffectPropCudaRenderSupported as CudaRenderSupported {
+	get_cuda_render_supported() -> String;
+	set_cuda_render_supported(&str);
+}}
+property! { kOfxImageEffectPropCudaEnabled as CudaEnabled {
+	get_cuda_enabled() -> Bool;
+}}
+
+property! { kOfxImageEffectPropMetalRenderSupported as MetalRenderSupported {
+	get_metal_render_supported() -> String;
+	set_metal_render_supported(&str);
+}}
+property! { kOfxImageEffectPropMetalEnabled as MetalEnabled {
+	get_metal_enabled() -> Bool;
+}}
+property! { kOfxImageEffectPropMetalCommandQueue as MetalCommandQueue {
+	get_metal_command_queue() -> VoidPtrMut;
+}}
+
 property! { kOfxImageEffectPropRenderQualityDraft as RenderQualityDraft {
 	get_render_quality_draft() -> Bool;
 }}
@@ -1215,6 +1245,9 @@ object_properties! { ImageEffectHost {
 	SupportsParametricAnimation	read,
 	SequentialRender			read,
 	OpenGLRenderSupported		read,
+	OpenCLRenderSupported		read,
+	CudaRenderSupported			read,
+	MetalRenderSupported		read,
 	RenderQualityDraft			read,
 	NativeOrigin				read,
 }}
@@ -1243,6 +1276,9 @@ object_properties! { EffectDescriptor {
 	SupportsMultipleClipDepths	read+write,
 	SupportsMultipleClipPARs	read+write,
 	OpenGLRenderSupported		read+write,
+	OpenCLRenderSupported		read+write,
+	CudaRenderSupported			read+write,
+	MetalRenderSupported		read+write,
 	ClipPreferencesSlaveParam	read+write,
 	FilePath					read,
 	// convenience extras
@@ -1416,6 +1452,11 @@ object_properties! { RenderInArgs {
 	SequentialRenderStatus		read,
 	InteractiveRenderStatus		read,
 	RenderQualityDraft			read,
+	OpenCLEnabled				read,
+	OpenCLCommandQueue			read,
+	CudaEnabled					read,
+	MetalEnabled				read,
+	MetalCommandQueue			read,
 }}
 
 object_properties! { BeginSequenceRenderInArgs {
