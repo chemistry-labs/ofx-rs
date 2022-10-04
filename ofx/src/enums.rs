@@ -83,13 +83,17 @@ identified_enum! {
 identified_enum! {
 	pub enum ImageEffectContext {
 		Filter,
-		General
+		General,
+		Retimer
 	}
 }
 
 impl ImageEffectContext {
 	pub fn is_general(self) -> bool {
 		self == ImageEffectContext::General
+	}
+	pub fn is_retimer(self) -> bool {
+		self == ImageEffectContext::Retimer
 	}
 }
 
@@ -256,6 +260,7 @@ mod tests {
 	fn auto_enum_names() {
 		assert!(ImageEffectContext::Filter.to_bytes() == kOfxImageEffectContextFilter);
 		assert!(ImageEffectContext::General.to_bytes() == kOfxImageEffectContextGeneral);
+		assert!(ImageEffectContext::Retimer.to_bytes() == kOfxImageEffectContextRetimer);
 	}
 
 	#[test]
@@ -269,8 +274,16 @@ mod tests {
 				== Some(ImageEffectContext::General)
 		);
 		assert!(
+			ImageEffectContext::from_bytes(kOfxImageEffectContextRetimer)
+				== Some(ImageEffectContext::Retimer)
+		);
+		assert!(
 			ImageEffectContext::from_bytes(b"OfxImageEffectContextGeneral\0")
 				== Some(ImageEffectContext::General)
+		);
+		assert!(
+			ImageEffectContext::from_bytes(b"OfxImageEffectContextRetimer\0")
+				== Some(ImageEffectContext::Retimer)
 		);
 		let str_value =
 			unsafe { CStr::from_bytes_with_nul_unchecked(b"OfxImageEffectContextGeneral\0") };
