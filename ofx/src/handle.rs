@@ -175,6 +175,16 @@ where
 		suite_fn!(paramGetValueAtTime in self.parameter; self.inner, time, &mut value as *mut T)?;
 		Ok(value)
 	}
+
+	pub fn set_value(&self, value: T) -> Result<()> {
+		suite_fn!(paramSetValue in self.parameter; self.inner, value)?;
+		Ok(())
+	}
+
+	pub fn set_value_at_time(&self, time: Time, value: T) -> Result<()> {
+		suite_fn!(paramSetValueAtTime in self.parameter; self.inner, time, value)?;
+		Ok(())
+	}
 }
 
 impl ParamHandle<Bool> {
@@ -188,6 +198,16 @@ impl ParamHandle<Bool> {
 		let mut value: Int = 0;
 		suite_fn!(paramGetValueAtTime in self.parameter; self.inner, time, &mut value as *mut Int)?;
 		Ok(value != 0)
+	}
+
+	pub fn set_value(&self, value: Bool) -> Result<()> {
+		suite_fn!(paramSetValue in self.parameter; self.inner, value as Int)?;
+		Ok(())
+	}
+
+	pub fn set_value_at_time(&self, time: Time, value: Bool) -> Result<()> {
+		suite_fn!(paramSetValueAtTime in self.parameter; self.inner, time, value as Int)?;
+		Ok(())
 	}
 }
 
@@ -210,6 +230,18 @@ impl ParamHandle<String> {
 		} else {
 			unsafe { std::ffi::CStr::from_ptr(value) }.to_str().map(|s| s.to_owned()).map_err(|e| e.into())
 		}
+	}
+
+	pub fn set_value(&self, value: String) -> Result<()> {
+		let ptr = std::ffi::CString::new(value)?;
+		suite_fn!(paramSetValue in self.parameter; self.inner, ptr.as_ptr() as *const CharPtr)?;
+		Ok(())
+	}
+
+	pub fn set_value_at_time(&self, time: Time, value: String) -> Result<()> {
+		let ptr = std::ffi::CString::new(value)?;
+		suite_fn!(paramSetValueAtTime in self.parameter; self.inner, time, ptr.as_ptr() as *const CharPtr)?;
+		Ok(())
 	}
 }
 
