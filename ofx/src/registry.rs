@@ -22,7 +22,7 @@ impl Registry {
 		name: &'static str,
 		api_version: ApiVersion,
 		plugin_version: PluginVersion,
-		instance: Box<Execute>,
+		instance: Box<dyn Execute>,
 		set_host: SetHost,
 		main_entry: MainEntry,
 	) -> usize {

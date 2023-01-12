@@ -1386,6 +1386,10 @@ object_properties! { ParamGroup {
 	CommonParameters			inherit,
 }}
 
+object_properties! { ParamPushButton {
+	CommonParameters			inherit,
+}}
+
 object_properties! { ParameterSet {
 	NeedsSyncing				read,
 }}

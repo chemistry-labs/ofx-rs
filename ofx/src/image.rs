@@ -260,12 +260,7 @@ macro_rules! pixel_format_rgba {
 				b: Self::ChannelValue,
 				a: Self::ChannelValue,
 			) -> Self {
-				let mut instance: $rgba = unsafe { std::mem::uninitialized() };
-				instance.r = r;
-				instance.g = g;
-				instance.b = b;
-				instance.a = a;
-				instance
+				Self { r, g, b, a }
 			}
 
 			#[inline]
