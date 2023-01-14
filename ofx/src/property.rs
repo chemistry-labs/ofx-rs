@@ -1116,6 +1116,11 @@ property! { kOfxParamPropScriptName as ScriptName {
 	set_script_name(&str);
 }}
 
+property! { kOfxParamPropSecret as Secret {
+	get_secret() -> Bool;
+	set_secret(Bool);
+}}
+
 property_group! { CommonParameters {
 	Type				read,
 	Label				read+write,
@@ -1123,6 +1128,7 @@ property_group! { CommonParameters {
 	Parent				read+write,
 	ScriptName			read+write,
 	Enabled				read+write,
+	Secret				read+write,
 }}
 
 pub mod double {
