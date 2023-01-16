@@ -1121,9 +1121,9 @@ property! { kOfxParamPropSecret as Secret {
 	set_secret(Bool);
 }}
 
-property! { kOfxParamPropPersistent as Persistant {
-	get_persistant() -> Bool;
-	set_persistant(Bool);
+property! { kOfxParamPropPersistent as Persistent {
+	get_persistent() -> Bool;
+	set_persistent(Bool);
 }}
 
 property_group! { CommonParameters {
@@ -1134,7 +1134,7 @@ property_group! { CommonParameters {
 	ScriptName			read+write,
 	Enabled				read+write,
 	Secret				read+write,
-	Persistant			read+write,
+	Persistent			read+write,
 }}
 
 pub mod double {
