@@ -1121,7 +1121,7 @@ property! { kOfxParamPropSecret as Secret {
 	set_secret(Bool);
 }}
 
-property! { kOfxParamPropPersistant as Persistant {
+property! { kOfxParamPropPersistent as Persistant {
 	get_persistant() -> Bool;
 	set_persistant(Bool);
 }}
