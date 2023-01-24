@@ -185,6 +185,30 @@ where
 		suite_fn!(paramSetValueAtTime in self.parameter; self.inner, time, value)?;
 		Ok(())
 	}
+
+	pub fn get_num_keys(&self) -> Result<u32> {
+		let mut value: u32 = 0;
+		suite_fn!(paramGetNumKeys in self.parameter; self.inner, &mut value as *mut u32)?;
+		Ok(value)
+	}
+	pub fn get_key_time(&self, nth_key: u32) -> Result<Time> {
+		let mut time: Time = Time::default();
+		suite_fn!(paramGetKeyTime in self.parameter; self.inner, nth_key, &mut time as *mut Time)?;
+		Ok(time)
+	}
+	pub fn get_key_index(&self, time: Time, direction: i32) -> Result<i32> {
+		let mut value: i32 = 0;
+		suite_fn!(paramGetKeyIndex in self.parameter; self.inner, time, direction, &mut value as *mut i32)?;
+		Ok(value)
+	}
+	pub fn delete_key(&self, time: Time) -> Result<()> {
+		suite_fn!(paramDeleteKey in self.parameter; self.inner, time)?;
+		Ok(())
+	}
+	pub fn delete_all_keys(&self) -> Result<()> {
+		suite_fn!(paramDeleteAllKeys in self.parameter; self.inner)?;
+		Ok(())
+	}
 }
 
 impl ParamHandle<Bool> {
