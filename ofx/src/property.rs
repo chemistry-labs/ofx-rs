@@ -1180,7 +1180,7 @@ pub mod Labels {
 	}
 }
 
-impl<T> Labels::CanSet for T where T: Label::CanSet + ShortLabel::CanSet + LongLabel::CanSet {}
+pub use Labels::CanSet as CanSetLabels;
 
 #[allow(non_snake_case)]
 pub mod NameRaw {
