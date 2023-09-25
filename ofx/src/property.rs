@@ -978,8 +978,8 @@ property! { kOfxImageEffectPropInteractiveRenderStatus as InteractiveRenderStatu
 }}
 
 property! { kOfxImageEffectPropOpenGLRenderSupported as OpenGLRenderSupported {
-	get_opengl_render_supported() -> Bool;
-	set_opengl_render_supported(Bool);
+	get_opengl_render_supported() -> String;
+	set_opengl_render_supported(&str);
 }}
 
 property! { kOfxImageEffectPropOpenCLRenderSupported as OpenCLRenderSupported {
