@@ -993,6 +993,16 @@ property! { kOfxImageEffectPropOpenCLCommandQueue as OpenCLCommandQueue {
 	get_opencl_command_queue() -> VoidPtrMut;
 }}
 
+property! { kOfxImageEffectPropOpenGLEnabled as OpenGLEnabled {
+	get_opengl_enabled() -> Bool;
+}}
+property! { kOfxImageEffectPropOpenGLTextureIndex as OpenGLTextureIndex {
+	get_opengl_texture_index() -> Int;
+}}
+property! { kOfxImageEffectPropOpenGLTextureTarget as OpenGLTextureTarget {
+	get_opengl_texture_target() -> Int;
+}}
+
 property! { kOfxImageEffectPropCudaRenderSupported as CudaRenderSupported {
 	get_cuda_render_supported() -> String;
 	set_cuda_render_supported(&str);
@@ -1468,6 +1478,9 @@ object_properties! { RenderInArgs {
 	SequentialRenderStatus		read,
 	InteractiveRenderStatus		read,
 	RenderQualityDraft			read,
+	OpenGLEnabled				read,
+	OpenGLTextureIndex			read,
+	OpenGLTextureTarget			read,
 	OpenCLEnabled				read,
 	OpenCLCommandQueue			read,
 	CudaEnabled					read,

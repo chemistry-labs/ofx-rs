@@ -8,7 +8,7 @@ extern crate log;
 extern crate log4rs;
 
 use std::collections::HashMap;
-use std::ffi::{CStr, CString};
+use std::ffi::CString;
 use std::fmt;
 use std::fmt::Display;
 use std::marker::PhantomData;

@@ -26,6 +26,8 @@ pub enum GlobalAction {
 	BeginInstanceEdit,
 	InstanceEdit,
 	EndInstanceEdit,
+	OpenGLContextAttached,
+	OpenGLContextDetached,
 	//	DescribeInteract,
 	//	CreateInstanceInteract,
 	//	DestroyInstanceInteract,
@@ -86,6 +88,9 @@ pub enum Action {
 	GetClipPreferences(ImageEffectHandle, GetClipPreferencesOutArgs),
 	GetTimeDomain(ImageEffectHandle, GetTimeDomainOutArgs),
 	IsIdentity(ImageEffectHandle, IsIdentityInArgs, IsIdentityOutArgs),
+
+	OpenGLContextAttached(ImageEffectHandle),
+	OpenGLContextDetached(ImageEffectHandle),
 
 	GenericGlobal(GlobalAction, GenericPluginHandle),
 	GenericImageEffect(ImageEffectAction, ImageEffectHandle),

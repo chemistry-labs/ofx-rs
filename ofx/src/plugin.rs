@@ -212,6 +212,8 @@ impl MapAction for PluginDescriptor {
 				SyncPrivateData => map_args! { SyncPrivateData() },
 				PurgeCaches => map_args! { PurgeCaches() },
 				CreateInstance => map_args!(CreateInstance()),
+				OpenGLContextAttached => map_args!(OpenGLContextAttached()),
+				OpenGLContextDetached => map_args!(OpenGLContextDetached()),
 				BeginInstanceChanged => map_args!(BeginInstanceChanged(in_args)),
 				InstanceChanged => map_args!(InstanceChanged(in_args)),
 				EndInstanceChanged => map_args!(EndInstanceChanged(in_args)),
@@ -361,6 +363,8 @@ impl PluginDescriptor {
 		global_add!(EndInstanceChanged);
 		global_add!(BeginInstanceEdit);
 		global_add!(EndInstanceEdit);
+		global_add!(OpenGLContextAttached);
+		global_add!(OpenGLContextDetached);
 		global_add!(Dialog);
 
 		image_effect_add!(GetRegionOfDefinition);

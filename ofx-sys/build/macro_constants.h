@@ -14,6 +14,11 @@ enum eOfxStatus {
 };
 
 #define kOfxImageEffectOpenGLRenderSuite "OfxImageEffectOpenGLRenderSuite"
+
+#define kOfxImageEffectPropOpenGLEnabled "OfxImageEffectPropOpenGLEnabled"
+#define kOfxImageEffectPropOpenGLTextureIndex "OfxImageEffectPropOpenGLTextureIndex"
+#define kOfxImageEffectPropOpenGLTextureTarget "OfxImageEffectPropOpenGLTextureTarget"
+
 #define kOfxImageEffectPropOpenCLRenderSupported "OfxImageEffectPropOpenCLRenderSupported"
 #define kOfxImageEffectPropOpenCLEnabled "OfxImageEffectPropOpenCLEnabled"
 #define kOfxImageEffectPropOpenCLCommandQueue "OfxImageEffectPropOpenCLCommandQueue"
