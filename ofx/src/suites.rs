@@ -67,6 +67,10 @@ impl Suites {
 		self.image_effect.clone()
 	}
 
+	pub fn image_effect_opengl_render(&self) -> Option<Rc<OfxImageEffectOpenGLRenderSuiteV1>> {
+		self.image_effect_opengl_render.clone()
+	}
+
 	pub fn property(&self) -> Rc<OfxPropertySuiteV1> {
 		self.property.clone()
 	}

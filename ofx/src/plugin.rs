@@ -408,11 +408,13 @@ impl PluginDescriptor {
 		let suites = self.suites()?;
 		let property_suite = suites.property();
 		let image_effect_suite = suites.image_effect();
+		let image_effect_opengl_render = suites.image_effect_opengl_render();
 		let parameter_suite = suites.parameter();
 		Ok(ImageEffectHandle::new(
 			handle,
 			property_suite,
 			image_effect_suite,
+			image_effect_opengl_render,
 			parameter_suite,
 		))
 	}

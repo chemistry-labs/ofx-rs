@@ -1382,6 +1382,8 @@ object_properties! { Image {
 	RowBytes					read,
 	Field						read,
 	UniqueIdentifier			read,
+	OpenGLTextureIndex          read,
+	OpenGLTextureTarget         read,
 }}
 
 object_properties! { ParamDouble {
@@ -1479,8 +1481,6 @@ object_properties! { RenderInArgs {
 	InteractiveRenderStatus		read,
 	RenderQualityDraft			read,
 	OpenGLEnabled				read,
-	OpenGLTextureIndex			read,
-	OpenGLTextureTarget			read,
 	OpenCLEnabled				read,
 	OpenCLCommandQueue			read,
 	CudaEnabled					read,

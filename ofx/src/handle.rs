@@ -58,6 +58,7 @@ pub struct ImageEffectHandle {
 	inner: OfxImageEffectHandle,
 	property: Rc<OfxPropertySuiteV1>,
 	image_effect: Rc<OfxImageEffectSuiteV1>,
+	image_effect_opengl_render: Option<Rc<OfxImageEffectOpenGLRenderSuiteV1>>,
 	parameter: Rc<OfxParameterSuiteV1>,
 }
 
@@ -67,6 +68,7 @@ pub struct ClipInstance {
 	inner_properties: OfxPropertySetHandle,
 	property: Rc<OfxPropertySuiteV1>,
 	image_effect: Rc<OfxImageEffectSuiteV1>,
+	image_effect_opengl_render: Option<Rc<OfxImageEffectOpenGLRenderSuiteV1>>,
 }
 
 #[derive(Clone)]
@@ -74,6 +76,8 @@ pub struct Image {
 	inner: OfxPropertySetHandle,
 	property: Rc<OfxPropertySuiteV1>,
 	image_effect: Rc<OfxImageEffectSuiteV1>,
+	image_effect_opengl_render: Option<Rc<OfxImageEffectOpenGLRenderSuiteV1>>,
+	is_texture: bool
 }
 
 pub trait ParamHandleValue: Default + Clone {}
@@ -129,12 +133,14 @@ impl ImageEffectHandle {
 		inner: OfxImageEffectHandle,
 		property: Rc<OfxPropertySuiteV1>,
 		image_effect: Rc<OfxImageEffectSuiteV1>,
+		image_effect_opengl_render: Option<Rc<OfxImageEffectOpenGLRenderSuiteV1>>,
 		parameter: Rc<OfxParameterSuiteV1>,
 	) -> Self {
 		ImageEffectHandle {
 			inner,
 			property,
 			image_effect,
+			image_effect_opengl_render,
 			parameter,
 		}
 	}
@@ -275,12 +281,14 @@ impl ClipInstance {
 		inner_properties: OfxPropertySetHandle,
 		property: Rc<OfxPropertySuiteV1>,
 		image_effect: Rc<OfxImageEffectSuiteV1>,
+		image_effect_opengl_render: Option<Rc<OfxImageEffectOpenGLRenderSuiteV1>>,
 	) -> Self {
 		ClipInstance {
 			inner,
 			inner_properties,
 			property,
 			image_effect,
+			image_effect_opengl_render,
 		}
 	}
 
@@ -314,7 +322,48 @@ impl ClipInstance {
 			image,
 			self.property.clone(),
 			self.image_effect.clone(),
+			self.image_effect_opengl_render.clone(),
+			false
 		)))
+	}
+
+	pub fn load_texture(&self, time: Time, region: Option<RectD>) -> Result<Rc<Image>> {
+		if let Some(suite) = self.image_effect_opengl_render.as_ref() {
+			let mut image: OfxPropertySetHandle = std::ptr::null_mut();
+			let region_ptr = region
+				.as_ref()
+				.map(|m| m as *const RectD)
+				.unwrap_or(std::ptr::null());
+			suite_fn!(clipLoadTexture in suite; self.inner, time, std::ptr::null(), region_ptr, &mut image as *mut OfxPropertySetHandle)?;
+			Ok(Rc::new(Image::new(
+				image,
+				self.property.clone(),
+				self.image_effect.clone(),
+				self.image_effect_opengl_render.clone(),
+				true
+			)))
+		} else {
+			Err(Error::InvalidSuite)
+		}
+	}
+	pub fn load_texture_mut(&self, time: Time, region: Option<RectD>) -> Result<Rc<RefCell<Image>>> {
+		if let Some(suite) = self.image_effect_opengl_render.as_ref() {
+			let mut image: OfxPropertySetHandle = std::ptr::null_mut();
+			let region_ptr = region
+				.as_ref()
+				.map(|m| m as *const RectD)
+				.unwrap_or(std::ptr::null());
+			suite_fn!(clipLoadTexture in suite; self.inner, time, std::ptr::null(), region_ptr, &mut image as *mut OfxPropertySetHandle)?;
+			Ok(Rc::new(RefCell::new(Image::new(
+				image,
+				self.property.clone(),
+				self.image_effect.clone(),
+				self.image_effect_opengl_render.clone(),
+				true
+			))))
+		} else {
+			Err(Error::InvalidSuite)
+		}
 	}
 
 	pub fn get_image_rect_mut(
@@ -332,6 +381,8 @@ impl ClipInstance {
 			image,
 			self.property.clone(),
 			self.image_effect.clone(),
+			self.image_effect_opengl_render.clone(),
+			false
 		))))
 	}
 }
@@ -348,11 +399,15 @@ impl Image {
 		inner: OfxPropertySetHandle,
 		property: Rc<OfxPropertySuiteV1>,
 		image_effect: Rc<OfxImageEffectSuiteV1>,
+		image_effect_opengl_render: Option<Rc<OfxImageEffectOpenGLRenderSuiteV1>>,
+		is_texture: bool
 	) -> Self {
 		Image {
 			inner,
 			property,
 			image_effect,
+			image_effect_opengl_render,
+			is_texture,
 		}
 	}
 
@@ -391,7 +446,16 @@ impl Image {
 
 	fn drop_image(&mut self) -> Result<()> {
 		debug!("Releasing data for ImageHandle {:?}", self.inner);
-		suite_fn!(clipReleaseImage in self.image_effect; self.inner)
+		if self.is_texture {
+			if let Some(suite) = self.image_effect_opengl_render.as_ref() {
+				suite_fn!(clipFreeTexture in suite; self.inner)?;
+				Ok(())
+			} else {
+				Err(Error::InvalidSuite)
+			}
+		} else {
+			suite_fn!(clipReleaseImage in self.image_effect; self.inner)
+		}
 	}
 }
 
@@ -560,6 +624,7 @@ impl ImageEffectHandle {
 			clip_properties,
 			self.property.clone(),
 			self.image_effect.clone(),
+			self.image_effect_opengl_render.clone(),
 		))
 	}
 
