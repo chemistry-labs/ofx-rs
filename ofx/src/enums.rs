@@ -99,8 +99,10 @@ impl ImageEffectContext {
 
 identified_enum! {
 	pub enum BitDepth {
+		None,
 		Byte,
 		Short,
+		Half,
 		Float
 	}
 }
@@ -108,8 +110,10 @@ identified_enum! {
 impl BitDepth {
 	pub fn bits(self) -> usize {
 		match self {
+			BitDepth::None => 0,
 			BitDepth::Byte => 8,
 			BitDepth::Short => 16,
+			BitDepth::Half => 16,
 			BitDepth::Float => 32,
 		}
 	}
