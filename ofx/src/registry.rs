@@ -113,23 +113,6 @@ where
 {
 	unsafe {
 		if _GLOBAL_REGISTRY.is_none() {
-			use log4rs::append::console::*;
-			use log4rs::config::*;
-
-			if let Err(e) = log4rs::init_file("ofx_log4rs.yaml", Default::default()) {
-				let config = Config::builder()
-					.appender(Appender::builder().build(
-						"stdout".to_string(),
-						Box::new(ConsoleAppender::builder().build()),
-					))
-					.logger(Logger::builder().build("ofx".to_string(), log::LevelFilter::Warn))
-					.build(
-						Root::builder()
-							.appender("stdout".to_string())
-							.build(log::LevelFilter::Error),
-					);
-				log4rs::init_config(config.unwrap()).unwrap();
-			}
 			let mut registry = Registry::new();
 			init_function(&mut registry);
 			for plugin in &registry.plugins {
