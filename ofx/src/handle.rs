@@ -25,6 +25,7 @@ impl PropertySetHandle {
 
 	pub(crate) fn empty() -> Self {
 		panic!("Do not use, only for type validation testing");
+		#[allow(deref_nullptr)]
 		PropertySetHandle {
 			inner: std::ptr::null::<OfxPropertySetStruct>() as *mut _,
 			property: unsafe { Rc::new(*std::ptr::null()) },
@@ -851,7 +852,7 @@ mod tests {
 	fn prop_host() {
 		let mut handle = EffectInstance(PropertySetHandle::empty());
 
-		handle.get::<property::Type::Property>();
+		handle.get::<property::TypeProp::Property>();
 		handle.get::<property::IsBackground::Property>();
 	}
 }

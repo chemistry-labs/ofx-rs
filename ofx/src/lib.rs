@@ -30,7 +30,6 @@ mod registry;
 mod image;
 pub use action::*;
 pub use enums::*;
-pub use enums::Type as Type;
 pub use handle::*;
 pub use plugin::*;
 pub use property::*;

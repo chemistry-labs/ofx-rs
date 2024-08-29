@@ -697,7 +697,7 @@ property! { kOfxPluginPropFilePath as FilePath {
 	get_file_path() -> String;
 }}
 
-property! { kOfxPropType as Type {
+property! { kOfxPropType as TypeProp {
 	get_type() -> CString as enum EType;
 }}
 
@@ -733,7 +733,7 @@ property! { kOfxPropAPIVersion as APIVersion {
 	get_api_version() -> String;
 }}
 
-property! { kOfxPropTime as Time {
+property! { kOfxPropTime as TimeProp {
 	get_time() -> Double;
 	set_time(Double);
 }}
@@ -1131,13 +1131,17 @@ property! { kOfxParamPropSecret as Secret {
 	set_secret(Bool);
 }}
 
+property! { kOfxParamPropGroupOpen as GroupOpen {
+	get_group_open() -> Bool;
+	set_group_open(Bool);
+}}
 property! { kOfxParamPropPersistent as Persistent {
 	get_persistent() -> Bool;
 	set_persistent(Bool);
 }}
 
 property_group! { CommonParameters {
-	Type				read,
+	TypeProp			read,
 	Label				read+write,
 	Hint				read+write,
 	Parent				read+write,
@@ -1276,7 +1280,7 @@ object_properties! { ImageEffectHost {
 
 // TODO: canset should be only exposed in the "Describe" action
 object_properties! { EffectDescriptor {
-	Type						read,
+	TypeProp					read,
 	Label						read+write,
 	ShortLabel					read+write,
 	LongLabel					read+write,
@@ -1309,7 +1313,7 @@ object_properties! { EffectDescriptor {
 
 // Image Effect Instance
 object_properties! { EffectInstance {
-	Type						read,
+	TypeProp					read,
 	Context						read,
 	Label						read,
 	ProjectSize					read,
@@ -1328,7 +1332,7 @@ object_properties! { EffectInstance {
 
 // Clip Descriptor
 object_properties! { ClipDescriptor {
-	Type						read,
+	TypeProp					read,
 	Name						read,
 	Label						read+write,
 	ShortLabel					read+write,
@@ -1343,7 +1347,7 @@ object_properties! { ClipDescriptor {
 
 // Clip Instance
 object_properties! { ClipInstance {
-	Type						read,
+	TypeProp					read,
 	Name						read,
 	Label						read,
 	ShortLabel					read,
@@ -1370,7 +1374,7 @@ object_properties! { ClipInstance {
 }}
 
 object_properties! { Image {
-	Type						read,
+	TypeProp					read,
 	PixelDepth					read,
 	Components					read,
 	PreMultiplication			read,
@@ -1408,6 +1412,7 @@ object_properties! { ParamPage {
 
 object_properties! { ParamGroup {
 	CommonParameters			inherit,
+	GroupOpen                   write,
 }}
 
 object_properties! { ParamPushButton {
@@ -1423,7 +1428,7 @@ object_properties! { DescribeInContextInArgs {
 }}
 
 object_properties! { IsIdentityInArgs {
-	Time						read,
+	TimeProp					read,
 	FieldToRender				read,
 	RenderWindow				read,
 	RenderScale					read,
@@ -1431,11 +1436,11 @@ object_properties! { IsIdentityInArgs {
 
 object_properties! { IsIdentityOutArgs {
 	Name						write,
-	Time						write,
+	TimeProp					write,
 }}
 
 object_properties! { GetRegionOfDefinitionInArgs {
-	Time						read,
+	TimeProp					read,
 	RegionOfDefinition			read,
 }}
 
@@ -1457,9 +1462,9 @@ object_properties! { GetClipPreferencesOutArgs {
 }}
 
 object_properties! { InstanceChangedInArgs {
-	Type						read,
+	TypeProp					read,
 	Name						read,
-	Time						read,
+	TimeProp					read,
 	ChangeReason				read,
 	RenderScale					read,
 }}
@@ -1473,7 +1478,7 @@ object_properties! { EndInstanceChangedInArgs {
 }}
 
 object_properties! { RenderInArgs {
-	Time						read,
+	TimeProp					read,
 	FieldToRender				read,
 	RenderWindow				read,
 	RenderScale					read,

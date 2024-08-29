@@ -174,16 +174,6 @@ identified_enum! {
 }
 
 identified_enum! {
-	pub enum ParamStringType {
-		SingleLine => kOfxParamStringIsSingleLine,
-		MultiLine => kOfxParamStringIsMultiLine,
-		FilePath => kOfxParamStringIsFilePath,
-		DirectoryPath => kOfxParamStringIsDirectoryPath,
-		Label => kOfxParamStringIsLabel
-	}
-}
-
-identified_enum! {
 	pub enum ImageField {
 		None,
 		Both,
@@ -209,21 +199,21 @@ identified_enum! {
 }
 
 identified_enum! {
-	pub enum Image {
-		Opaque,
-		PreMultiplied,
-		UnPreMultiplied
+	pub enum ImageType {
+		Opaque => kOfxImageOpaque,
+		PreMultiplied => kOfxImagePreMultiplied,
+		UnPreMultiplied => kOfxImageUnPreMultiplied
 	}
 }
 
 identified_enum! {
-	pub enum ParamString {
-		IsSingleLine,
-		IsMultiLine,
-		IsFilePath,
-		IsDirectoryPath,
-		IsLabel,
-		IsRichTextFormat
+	pub enum ParamStringType {
+		SingleLine => kOfxParamStringIsSingleLine,
+		MultiLine => kOfxParamStringIsMultiLine,
+		FilePath => kOfxParamStringIsFilePath,
+		DirectoryPath => kOfxParamStringIsDirectoryPath,
+		Label => kOfxParamStringIsLabel,
+		RichTextFormat => kOfxParamStringIsRichTextFormat
 	}
 }
 
