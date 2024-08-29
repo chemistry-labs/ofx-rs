@@ -1,5 +1,3 @@
-#![feature(concat_idents)]
-
 use enums::{
 	BitDepth, Change, HostNativeOrigin, IdentifiedEnum, ImageComponent, ImageEffectContext,
 	ImageEffectRender, ImageField, ImageFieldExtraction, ImageFieldOrder, ParamDoubleType,

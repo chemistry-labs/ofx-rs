@@ -165,14 +165,14 @@ impl MapAction for PluginDescriptor {
 			($action:ident(in_args)) => {
 				Ok(Action::$action(
 					self.new_image_effect_raw(handle)?,
-					self.typed_properties(build_typed::<concat_idents!($action, InArgs)>, in_args)?,
+					self.typed_properties(build_typed::<paste::paste! { [<$action InArgs>] }>, in_args)?,
 					))
 			};
 			($action:ident(out_args)) => {
 				Ok(Action::$action(
 					self.new_image_effect_raw(handle)?,
 					self.typed_properties(
-						build_typed::<concat_idents!($action, OutArgs)>,
+						build_typed::<paste::paste! { [<$action OutArgs>] }>,
 						out_args,
 					)?,
 					))
@@ -180,9 +180,9 @@ impl MapAction for PluginDescriptor {
 			($action:ident(in_args, out_args)) => {
 				Ok(Action::$action(
 					self.new_image_effect_raw(handle)?,
-					self.typed_properties(build_typed::<concat_idents!($action, InArgs)>, in_args)?,
+					self.typed_properties(build_typed::<paste::paste! { [<$action InArgs>] }>, in_args)?,
 					self.typed_properties(
-						build_typed::<concat_idents!($action, OutArgs)>,
+						build_typed::<paste::paste! { [<$action OutArgs>] }>,
 						out_args,
 					)?,
 					))
@@ -334,7 +334,7 @@ impl PluginDescriptor {
 					stringify!($id),
 					stringify!($id)
 					);
-				global_action_index.insert(concat_idents!(kOfxAction, $id), GlobalAction::$id)
+				global_action_index.insert(paste::paste! { [<kOfxAction $id>] }, GlobalAction::$id)
 			};
 		}
 		macro_rules! image_effect_add {
@@ -345,7 +345,7 @@ impl PluginDescriptor {
 					stringify!($id)
 					);
 				image_effect_action_index.insert(
-					concat_idents!(kOfxImageEffectAction, $id),
+					paste::paste! { [<kOfxImageEffectAction $id>] },
 					ImageEffectAction::$id,
 					)
 			};
@@ -440,12 +440,7 @@ impl PluginDescriptor {
 				unsafe {
 					let suiteptr = fetch_suite(
 						host.host as OfxPropertySetHandle,
-						CStr::from_bytes_with_nul_unchecked(concat_idents!(
-							kOfx,
-							$suite_name,
-							Suite
-						))
-						.as_ptr(),
+						CStr::from_bytes_with_nul_unchecked(paste::paste! { [<kOfx $suite_name Suite>] }).as_ptr(),
 						$suite_version,
 						);
 					if suiteptr.is_null() {
@@ -460,12 +455,7 @@ impl PluginDescriptor {
 						unsafe {
 							Some(*unsafe {
 								suiteptr
-									as *const concat_idents!(
-										Ofx,
-										$suite_name,
-										Suite,
-										$suite_version
-									)
+									as *const paste::paste! { [<Ofx $suite_name Suite $suite_version >] }
 							})
 							}
 						}

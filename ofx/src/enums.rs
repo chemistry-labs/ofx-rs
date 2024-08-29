@@ -53,14 +53,14 @@ macro_rules! identified_enum {
 		impl IdentifiedEnum for $name {
 			fn to_bytes(&self) -> &'static [u8] {
 				match *self {
-					$($name::$key => concat_idents!(kOfx, $name, $key)),
+					$($name::$key => paste::paste! { [<kOfx $name $key>] }),
 					*
 				}
 			}
 
 			fn from_bytes(ofx_name: &[u8]) -> Option<Self> {
 				// TODO: use PHF or some sort of hashing
-				$(if ofx_name == &concat_idents!(kOfx, $name, $key)[..] { Some($name::$key) } else)
+				$(if ofx_name == &paste::paste! { [<kOfx $name $key>] }[..] { Some($name::$key) } else)
 				*
 				{ None }
 			}
