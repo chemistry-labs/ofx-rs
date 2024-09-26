@@ -29,3 +29,5 @@ enum eOfxStatus {
 #define kOfxImageEffectPropMetalRenderSupported "OfxImageEffectPropMetalRenderSupported"
 #define kOfxImageEffectPropMetalEnabled "OfxImageEffectPropMetalEnabled"
 #define kOfxImageEffectPropMetalCommandQueue "OfxImageEffectPropMetalCommandQueue"
+
+#define kOfxImageEffectPropResolvePage "OfxImageEffectPropResolvePage"

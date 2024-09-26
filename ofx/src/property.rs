@@ -1024,6 +1024,10 @@ property! { kOfxImageEffectPropRenderQualityDraft as RenderQualityDraft {
 	get_render_quality_draft() -> Bool;
 }}
 
+property! { kOfxImageEffectPropResolvePage as ResolvePage {
+	get_resolve_page() -> String;
+}}
+
 property! { kOfxImageEffectInstancePropEffectDuration as EffectDuration {
 	get_effect_duration() -> Double;
 	set_effect_duration(Double);
@@ -1319,6 +1323,7 @@ object_properties! { EffectInstance {
 	ProjectExtent				read,
 	ProjectPixelAspectRatio		read,
 	EffectDuration				read,
+	ResolvePage  				read,
 	SequentialRender			read+write,
 	SupportsTiles				read+write,
 	SupportsMultiResolution		read+write,
