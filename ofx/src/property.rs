@@ -1171,6 +1171,12 @@ pub mod string {
 	property_assign_name!(kOfxParamPropStringMode as StringType: (&[u8]) -> CString);
 }
 
+pub mod choice {
+	use super::*;
+	property_assign_name!(kOfxParamPropDefault as Default: Int);
+	property_assign_name!(kOfxParamPropChoiceOption as ChoiceOption: (&str) -> String);
+}
+
 pub mod page {
 	use super::*;
 	property_assign_name!(kOfxParamPropPageChild as Child: (&str) -> String);
@@ -1182,6 +1188,13 @@ pub mod Children {
 	property_define_setter_trait!(CanSet => set_children, page::Child, &seq[&str]);
 }
 pub use Children::CanSet as CanSetChildren;
+
+#[allow(non_snake_case)]
+pub mod Choices {
+	use super::*;
+	property_define_setter_trait!(CanSet => set_choices, choice::ChoiceOption, &seq[&str]);
+}
+pub use Choices::CanSet as CanSetChoices;
 
 #[allow(non_snake_case)]
 pub mod Labels {
@@ -1241,6 +1254,16 @@ pub mod StringParams {
 }
 
 pub use StringParams::CanSet as CanSetStringParams;
+
+#[allow(non_snake_case)]
+pub mod ChoiceParams {
+	use super::*;
+	pub trait CanSet: Writable {
+		property_define_setter_trait!(set_default, choice::Default);
+	}
+}
+
+pub use ChoiceParams::CanSet as CanSetChoiceParams;
 
 impl<T> CommonParameters for ParamHandle<T> where T: ParamHandleValue + Clone {}
 
@@ -1406,6 +1429,12 @@ object_properties! { ParamBoolean {
 object_properties! { ParamString {
 	CommonParameters			inherit,
 	StringParams				write,
+}}
+
+object_properties! { ParamChoice {
+	CommonParameters			inherit,
+	Choices						write,
+	ChoiceParams				write,
 }}
 
 object_properties! { ParamPage {

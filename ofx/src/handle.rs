@@ -560,6 +560,7 @@ properties_newtype!(ParamString);
 properties_newtype!(ParamPage);
 properties_newtype!(ParamGroup);
 properties_newtype!(ParamPushButton);
+properties_newtype!(ParamChoice);
 
 properties_newtype!(ParameterSet);
 
@@ -801,6 +802,10 @@ impl ParamSetHandle {
 
 	pub fn param_define_button(&mut self, name: &str) -> Result<ParamPushButton> {
 		self.param_define(ParamType::PushButton, name)
+	}
+
+	pub fn param_define_choice(&mut self, name: &str) -> Result<ParamChoice> {
+		self.param_define(ParamType::Choice, name)
 	}
 }
 
