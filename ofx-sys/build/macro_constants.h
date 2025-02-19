@@ -14,3 +14,20 @@ enum eOfxStatus {
 };
 
 #define kOfxImageEffectOpenGLRenderSuite "OfxImageEffectOpenGLRenderSuite"
+
+#define kOfxImageEffectPropOpenGLEnabled "OfxImageEffectPropOpenGLEnabled"
+#define kOfxImageEffectPropOpenGLTextureIndex "OfxImageEffectPropOpenGLTextureIndex"
+#define kOfxImageEffectPropOpenGLTextureTarget "OfxImageEffectPropOpenGLTextureTarget"
+
+#define kOfxImageEffectPropOpenCLRenderSupported "OfxImageEffectPropOpenCLRenderSupported"
+#define kOfxImageEffectPropOpenCLEnabled "OfxImageEffectPropOpenCLEnabled"
+#define kOfxImageEffectPropOpenCLCommandQueue "OfxImageEffectPropOpenCLCommandQueue"
+
+#define kOfxImageEffectPropCudaRenderSupported "OfxImageEffectPropCudaRenderSupported"
+#define kOfxImageEffectPropCudaEnabled "OfxImageEffectPropCudaEnabled"
+
+#define kOfxImageEffectPropMetalRenderSupported "OfxImageEffectPropMetalRenderSupported"
+#define kOfxImageEffectPropMetalEnabled "OfxImageEffectPropMetalEnabled"
+#define kOfxImageEffectPropMetalCommandQueue "OfxImageEffectPropMetalCommandQueue"
+
+#define kOfxImageEffectPropResolvePage "OfxImageEffectPropResolvePage"

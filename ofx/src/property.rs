@@ -1,11 +1,11 @@
-#![feature(concat_idents)]
-
 use enums::{
 	BitDepth, Change, HostNativeOrigin, IdentifiedEnum, ImageComponent, ImageEffectContext,
 	ImageEffectRender, ImageField, ImageFieldExtraction, ImageFieldOrder, ParamDoubleType,
+	ParamStringType,
 	Type as EType,
 };
 use handle::Image;
+use handle::ParamString;
 use handle::*;
 use ofx_sys::*;
 use result;
@@ -695,7 +695,7 @@ property! { kOfxPluginPropFilePath as FilePath {
 	get_file_path() -> String;
 }}
 
-property! { kOfxPropType as Type {
+property! { kOfxPropType as TypeProp {
 	get_type() -> CString as enum EType;
 }}
 
@@ -731,7 +731,7 @@ property! { kOfxPropAPIVersion as APIVersion {
 	get_api_version() -> String;
 }}
 
-property! { kOfxPropTime as Time {
+property! { kOfxPropTime as TimeProp {
 	get_time() -> Double;
 	set_time(Double);
 }}
@@ -976,12 +976,56 @@ property! { kOfxImageEffectPropInteractiveRenderStatus as InteractiveRenderStatu
 }}
 
 property! { kOfxImageEffectPropOpenGLRenderSupported as OpenGLRenderSupported {
-	get_opengl_render_supported() -> Bool;
-	set_opengl_render_supported(Bool);
+	get_opengl_render_supported() -> String;
+	set_opengl_render_supported(&str);
+}}
+
+property! { kOfxImageEffectPropOpenCLRenderSupported as OpenCLRenderSupported {
+	get_opencl_render_supported() -> String;
+	set_opencl_render_supported(&str);
+}}
+property! { kOfxImageEffectPropOpenCLEnabled as OpenCLEnabled {
+	get_opencl_enabled() -> Bool;
+}}
+property! { kOfxImageEffectPropOpenCLCommandQueue as OpenCLCommandQueue {
+	get_opencl_command_queue() -> VoidPtrMut;
+}}
+
+property! { kOfxImageEffectPropOpenGLEnabled as OpenGLEnabled {
+	get_opengl_enabled() -> Bool;
+}}
+property! { kOfxImageEffectPropOpenGLTextureIndex as OpenGLTextureIndex {
+	get_opengl_texture_index() -> Int;
+}}
+property! { kOfxImageEffectPropOpenGLTextureTarget as OpenGLTextureTarget {
+	get_opengl_texture_target() -> Int;
+}}
+
+property! { kOfxImageEffectPropCudaRenderSupported as CudaRenderSupported {
+	get_cuda_render_supported() -> String;
+	set_cuda_render_supported(&str);
+}}
+property! { kOfxImageEffectPropCudaEnabled as CudaEnabled {
+	get_cuda_enabled() -> Bool;
+}}
+
+property! { kOfxImageEffectPropMetalRenderSupported as MetalRenderSupported {
+	get_metal_render_supported() -> String;
+	set_metal_render_supported(&str);
+}}
+property! { kOfxImageEffectPropMetalEnabled as MetalEnabled {
+	get_metal_enabled() -> Bool;
+}}
+property! { kOfxImageEffectPropMetalCommandQueue as MetalCommandQueue {
+	get_metal_command_queue() -> VoidPtrMut;
 }}
 
 property! { kOfxImageEffectPropRenderQualityDraft as RenderQualityDraft {
 	get_render_quality_draft() -> Bool;
+}}
+
+property! { kOfxImageEffectPropResolvePage as ResolvePage {
+	get_resolve_page() -> String;
 }}
 
 property! { kOfxImageEffectInstancePropEffectDuration as EffectDuration {
@@ -1084,13 +1128,29 @@ property! { kOfxParamPropScriptName as ScriptName {
 	set_script_name(&str);
 }}
 
+property! { kOfxParamPropSecret as Secret {
+	get_secret() -> Bool;
+	set_secret(Bool);
+}}
+
+property! { kOfxParamPropGroupOpen as GroupOpen {
+	get_group_open() -> Bool;
+	set_group_open(Bool);
+}}
+property! { kOfxParamPropPersistent as Persistent {
+	get_persistent() -> Bool;
+	set_persistent(Bool);
+}}
+
 property_group! { CommonParameters {
-	Type				read,
+	TypeProp			read,
 	Label				read+write,
 	Hint				read+write,
 	Parent				read+write,
 	ScriptName			read+write,
 	Enabled				read+write,
+	Secret				read+write,
+	Persistent			read+write,
 }}
 
 pub mod double {
@@ -1106,6 +1166,17 @@ pub mod boolean {
 	property_assign_name!(kOfxParamPropDefault as Default: Bool);
 }
 
+pub mod string {
+	use super::*;
+	property_assign_name!(kOfxParamPropStringMode as StringType: (&[u8]) -> CString);
+}
+
+pub mod choice {
+	use super::*;
+	property_assign_name!(kOfxParamPropDefault as Default: Int);
+	property_assign_name!(kOfxParamPropChoiceOption as ChoiceOption: (&str) -> String);
+}
+
 pub mod page {
 	use super::*;
 	property_assign_name!(kOfxParamPropPageChild as Child: (&str) -> String);
@@ -1117,6 +1188,13 @@ pub mod Children {
 	property_define_setter_trait!(CanSet => set_children, page::Child, &seq[&str]);
 }
 pub use Children::CanSet as CanSetChildren;
+
+#[allow(non_snake_case)]
+pub mod Choices {
+	use super::*;
+	property_define_setter_trait!(CanSet => set_choices, choice::ChoiceOption, &seq[&str]);
+}
+pub use Choices::CanSet as CanSetChoices;
 
 #[allow(non_snake_case)]
 pub mod Labels {
@@ -1131,7 +1209,7 @@ pub mod Labels {
 	}
 }
 
-impl<T> Labels::CanSet for T where T: Label::CanSet + ShortLabel::CanSet + LongLabel::CanSet {}
+pub use Labels::CanSet as CanSetLabels;
 
 #[allow(non_snake_case)]
 pub mod NameRaw {
@@ -1167,6 +1245,26 @@ pub mod BooleanParams {
 
 pub use BooleanParams::CanSet as CanSetBooleanParams;
 
+#[allow(non_snake_case)]
+pub mod StringParams {
+	use super::*;
+	pub trait CanSet: Writable {
+		property_define_setter_trait!(set_string_type, string::StringType, enum ParamStringType);
+	}
+}
+
+pub use StringParams::CanSet as CanSetStringParams;
+
+#[allow(non_snake_case)]
+pub mod ChoiceParams {
+	use super::*;
+	pub trait CanSet: Writable {
+		property_define_setter_trait!(set_default, choice::Default);
+	}
+}
+
+pub use ChoiceParams::CanSet as CanSetChoiceParams;
+
 impl<T> CommonParameters for ParamHandle<T> where T: ParamHandleValue + Clone {}
 
 // https://openfx.readthedocs.io/en/doc/Reference/ofxPropertiesByObject.html#properties-on-an-effect-descriptor
@@ -1198,13 +1296,16 @@ object_properties! { ImageEffectHost {
 	SupportsParametricAnimation	read,
 	SequentialRender			read,
 	OpenGLRenderSupported		read,
+	OpenCLRenderSupported		read,
+	CudaRenderSupported			read,
+	MetalRenderSupported		read,
 	RenderQualityDraft			read,
 	NativeOrigin				read,
 }}
 
 // TODO: canset should be only exposed in the "Describe" action
 object_properties! { EffectDescriptor {
-	Type						read,
+	TypeProp					read,
 	Label						read+write,
 	ShortLabel					read+write,
 	LongLabel					read+write,
@@ -1226,6 +1327,9 @@ object_properties! { EffectDescriptor {
 	SupportsMultipleClipDepths	read+write,
 	SupportsMultipleClipPARs	read+write,
 	OpenGLRenderSupported		read+write,
+	OpenCLRenderSupported		read+write,
+	CudaRenderSupported			read+write,
+	MetalRenderSupported		read+write,
 	ClipPreferencesSlaveParam	read+write,
 	FilePath					read,
 	// convenience extras
@@ -1234,7 +1338,7 @@ object_properties! { EffectDescriptor {
 
 // Image Effect Instance
 object_properties! { EffectInstance {
-	Type						read,
+	TypeProp					read,
 	Context						read,
 	Label						read,
 	ProjectSize					read,
@@ -1242,6 +1346,7 @@ object_properties! { EffectInstance {
 	ProjectExtent				read,
 	ProjectPixelAspectRatio		read,
 	EffectDuration				read,
+	ResolvePage  				read,
 	SequentialRender			read+write,
 	SupportsTiles				read+write,
 	SupportsMultiResolution		read+write,
@@ -1253,7 +1358,7 @@ object_properties! { EffectInstance {
 
 // Clip Descriptor
 object_properties! { ClipDescriptor {
-	Type						read,
+	TypeProp					read,
 	Name						read,
 	Label						read+write,
 	ShortLabel					read+write,
@@ -1268,7 +1373,7 @@ object_properties! { ClipDescriptor {
 
 // Clip Instance
 object_properties! { ClipInstance {
-	Type						read,
+	TypeProp					read,
 	Name						read,
 	Label						read,
 	ShortLabel					read,
@@ -1295,7 +1400,7 @@ object_properties! { ClipInstance {
 }}
 
 object_properties! { Image {
-	Type						read,
+	TypeProp					read,
 	PixelDepth					read,
 	Components					read,
 	PreMultiplication			read,
@@ -1307,6 +1412,8 @@ object_properties! { Image {
 	RowBytes					read,
 	Field						read,
 	UniqueIdentifier			read,
+	OpenGLTextureIndex          read,
+	OpenGLTextureTarget         read,
 }}
 
 object_properties! { ParamDouble {
@@ -1319,12 +1426,28 @@ object_properties! { ParamBoolean {
 	BooleanParams				write,
 }}
 
+object_properties! { ParamString {
+	CommonParameters			inherit,
+	StringParams				write,
+}}
+
+object_properties! { ParamChoice {
+	CommonParameters			inherit,
+	Choices						write,
+	ChoiceParams				write,
+}}
+
 object_properties! { ParamPage {
 	CommonParameters			inherit,
 	Children					write,
 }}
 
 object_properties! { ParamGroup {
+	CommonParameters			inherit,
+	GroupOpen                   write,
+}}
+
+object_properties! { ParamPushButton {
 	CommonParameters			inherit,
 }}
 
@@ -1337,7 +1460,7 @@ object_properties! { DescribeInContextInArgs {
 }}
 
 object_properties! { IsIdentityInArgs {
-	Time						read,
+	TimeProp					read,
 	FieldToRender				read,
 	RenderWindow				read,
 	RenderScale					read,
@@ -1345,11 +1468,11 @@ object_properties! { IsIdentityInArgs {
 
 object_properties! { IsIdentityOutArgs {
 	Name						write,
-	Time						write,
+	TimeProp					write,
 }}
 
 object_properties! { GetRegionOfDefinitionInArgs {
-	Time						read,
+	TimeProp					read,
 	RegionOfDefinition			read,
 }}
 
@@ -1371,9 +1494,9 @@ object_properties! { GetClipPreferencesOutArgs {
 }}
 
 object_properties! { InstanceChangedInArgs {
-	Type						read,
+	TypeProp					read,
 	Name						read,
-	Time						read,
+	TimeProp					read,
 	ChangeReason				read,
 	RenderScale					read,
 }}
@@ -1387,13 +1510,19 @@ object_properties! { EndInstanceChangedInArgs {
 }}
 
 object_properties! { RenderInArgs {
-	Time						read,
+	TimeProp					read,
 	FieldToRender				read,
 	RenderWindow				read,
 	RenderScale					read,
 	SequentialRenderStatus		read,
 	InteractiveRenderStatus		read,
 	RenderQualityDraft			read,
+	OpenGLEnabled				read,
+	OpenCLEnabled				read,
+	OpenCLCommandQueue			read,
+	CudaEnabled					read,
+	MetalEnabled				read,
+	MetalCommandQueue			read,
 }}
 
 object_properties! { BeginSequenceRenderInArgs {

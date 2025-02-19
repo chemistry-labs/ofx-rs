@@ -1,14 +1,12 @@
 #![allow(unused)]
-#![feature(concat_idents)]
-#![feature(specialization)]
+//#![feature(min_specialization)]
 
 extern crate ofx_sys;
 #[macro_use]
 extern crate log;
-extern crate log4rs;
 
 use std::collections::HashMap;
-use std::ffi::{CStr, CString};
+use std::ffi::CString;
 use std::fmt;
 use std::fmt::Display;
 use std::marker::PhantomData;
@@ -31,7 +29,6 @@ mod registry;
 mod image;
 pub use action::*;
 pub use enums::*;
-pub use enums::Type as Type;
 pub use handle::*;
 pub use plugin::*;
 pub use property::*;

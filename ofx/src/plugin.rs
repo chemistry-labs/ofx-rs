@@ -85,7 +85,7 @@ pub struct PluginDescriptor {
 	host: Option<OfxHost>,
 	suites: Option<Suites>,
 	cached_handle: Option<ImageEffectHandle>,
-	instance: Box<Execute>,
+	instance: Box<dyn Execute>,
 	global_action_index: EnumIndex<GlobalAction>,
 	image_effect_action_index: EnumIndex<ImageEffectAction>,
 	ofx_plugin: OfxPlugin, // need an owned copy for the lifetime of the plugin
@@ -165,14 +165,14 @@ impl MapAction for PluginDescriptor {
 			($action:ident(in_args)) => {
 				Ok(Action::$action(
 					self.new_image_effect_raw(handle)?,
-					self.typed_properties(build_typed::<concat_idents!($action, InArgs)>, in_args)?,
+					self.typed_properties(build_typed::<paste::paste! { [<$action InArgs>] }>, in_args)?,
 					))
 			};
 			($action:ident(out_args)) => {
 				Ok(Action::$action(
 					self.new_image_effect_raw(handle)?,
 					self.typed_properties(
-						build_typed::<concat_idents!($action, OutArgs)>,
+						build_typed::<paste::paste! { [<$action OutArgs>] }>,
 						out_args,
 					)?,
 					))
@@ -180,9 +180,9 @@ impl MapAction for PluginDescriptor {
 			($action:ident(in_args, out_args)) => {
 				Ok(Action::$action(
 					self.new_image_effect_raw(handle)?,
-					self.typed_properties(build_typed::<concat_idents!($action, InArgs)>, in_args)?,
+					self.typed_properties(build_typed::<paste::paste! { [<$action InArgs>] }>, in_args)?,
 					self.typed_properties(
-						build_typed::<concat_idents!($action, OutArgs)>,
+						build_typed::<paste::paste! { [<$action OutArgs>] }>,
 						out_args,
 					)?,
 					))
@@ -212,6 +212,8 @@ impl MapAction for PluginDescriptor {
 				SyncPrivateData => map_args! { SyncPrivateData() },
 				PurgeCaches => map_args! { PurgeCaches() },
 				CreateInstance => map_args!(CreateInstance()),
+				OpenGLContextAttached => map_args!(OpenGLContextAttached()),
+				OpenGLContextDetached => map_args!(OpenGLContextDetached()),
 				BeginInstanceChanged => map_args!(BeginInstanceChanged(in_args)),
 				InstanceChanged => map_args!(InstanceChanged(in_args)),
 				EndInstanceChanged => map_args!(EndInstanceChanged(in_args)),
@@ -306,7 +308,7 @@ impl PluginDescriptor {
 		name: &'static str,
 		api_version: ApiVersion,
 		plugin_version: PluginVersion,
-		instance: Box<Execute>,
+		instance: Box<dyn Execute>,
 		set_host: SetHost,
 		main_entry: MainEntry,
 	) -> PluginDescriptor {
@@ -332,7 +334,7 @@ impl PluginDescriptor {
 					stringify!($id),
 					stringify!($id)
 					);
-				global_action_index.insert(concat_idents!(kOfxAction, $id), GlobalAction::$id)
+				global_action_index.insert(paste::paste! { [<kOfxAction $id>] }, GlobalAction::$id)
 			};
 		}
 		macro_rules! image_effect_add {
@@ -343,7 +345,7 @@ impl PluginDescriptor {
 					stringify!($id)
 					);
 				image_effect_action_index.insert(
-					concat_idents!(kOfxImageEffectAction, $id),
+					paste::paste! { [<kOfxImageEffectAction $id>] },
 					ImageEffectAction::$id,
 					)
 			};
@@ -361,6 +363,8 @@ impl PluginDescriptor {
 		global_add!(EndInstanceChanged);
 		global_add!(BeginInstanceEdit);
 		global_add!(EndInstanceEdit);
+		global_add!(OpenGLContextAttached);
+		global_add!(OpenGLContextDetached);
 		global_add!(Dialog);
 
 		image_effect_add!(GetRegionOfDefinition);
@@ -404,11 +408,13 @@ impl PluginDescriptor {
 		let suites = self.suites()?;
 		let property_suite = suites.property();
 		let image_effect_suite = suites.image_effect();
+		let image_effect_opengl_render = suites.image_effect_opengl_render();
 		let parameter_suite = suites.parameter();
 		Ok(ImageEffectHandle::new(
 			handle,
 			property_suite,
 			image_effect_suite,
+			image_effect_opengl_render,
 			parameter_suite,
 		))
 	}
@@ -434,12 +440,7 @@ impl PluginDescriptor {
 				unsafe {
 					let suiteptr = fetch_suite(
 						host.host as OfxPropertySetHandle,
-						CStr::from_bytes_with_nul_unchecked(concat_idents!(
-							kOfx,
-							$suite_name,
-							Suite
-						))
-						.as_ptr(),
+						CStr::from_bytes_with_nul_unchecked(paste::paste! { [<kOfx $suite_name Suite>] }).as_ptr(),
 						$suite_version,
 						);
 					if suiteptr.is_null() {
@@ -454,12 +455,7 @@ impl PluginDescriptor {
 						unsafe {
 							Some(*unsafe {
 								suiteptr
-									as *const concat_idents!(
-										Ofx,
-										$suite_name,
-										Suite,
-										$suite_version
-									)
+									as *const paste::paste! { [<Ofx $suite_name Suite $suite_version >] }
 							})
 							}
 						}

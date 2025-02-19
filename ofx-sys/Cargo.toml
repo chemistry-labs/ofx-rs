@@ -27,7 +27,7 @@ path="src/lib.rs"
 libc = "0.2"
 
 [build-dependencies]
-bindgen = "0.58.1"
+bindgen = "0.70.1"
 
 [dev-dependencies]
-cgmath = "0.16"
+cgmath = "0.18"

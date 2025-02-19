@@ -8,6 +8,7 @@ use std::cell::RefCell;
 use std::ffi::{CStr, CString};
 use std::fmt;
 use std::marker::PhantomData;
+use std::os::raw::c_char;
 use std::rc::Rc;
 use types::*;
 
@@ -24,6 +25,7 @@ impl PropertySetHandle {
 
 	pub(crate) fn empty() -> Self {
 		panic!("Do not use, only for type validation testing");
+		#[allow(deref_nullptr)]
 		PropertySetHandle {
 			inner: std::ptr::null::<OfxPropertySetStruct>() as *mut _,
 			property: unsafe { Rc::new(*std::ptr::null()) },
@@ -57,6 +59,7 @@ pub struct ImageEffectHandle {
 	inner: OfxImageEffectHandle,
 	property: Rc<OfxPropertySuiteV1>,
 	image_effect: Rc<OfxImageEffectSuiteV1>,
+	image_effect_opengl_render: Option<Rc<OfxImageEffectOpenGLRenderSuiteV1>>,
 	parameter: Rc<OfxParameterSuiteV1>,
 }
 
@@ -66,6 +69,7 @@ pub struct ClipInstance {
 	inner_properties: OfxPropertySetHandle,
 	property: Rc<OfxPropertySuiteV1>,
 	image_effect: Rc<OfxImageEffectSuiteV1>,
+	image_effect_opengl_render: Option<Rc<OfxImageEffectOpenGLRenderSuiteV1>>,
 }
 
 #[derive(Clone)]
@@ -73,12 +77,15 @@ pub struct Image {
 	inner: OfxPropertySetHandle,
 	property: Rc<OfxPropertySuiteV1>,
 	image_effect: Rc<OfxImageEffectSuiteV1>,
+	image_effect_opengl_render: Option<Rc<OfxImageEffectOpenGLRenderSuiteV1>>,
+	is_texture: bool
 }
 
 pub trait ParamHandleValue: Default + Clone {}
 impl ParamHandleValue for Int {}
 impl ParamHandleValue for Bool {}
 impl ParamHandleValue for Double {}
+impl ParamHandleValue for String {}
 
 pub trait ParamHandleValueDefault: ParamHandleValue + Default {}
 impl ParamHandleValueDefault for Int {}
@@ -127,12 +134,14 @@ impl ImageEffectHandle {
 		inner: OfxImageEffectHandle,
 		property: Rc<OfxPropertySuiteV1>,
 		image_effect: Rc<OfxImageEffectSuiteV1>,
+		image_effect_opengl_render: Option<Rc<OfxImageEffectOpenGLRenderSuiteV1>>,
 		parameter: Rc<OfxParameterSuiteV1>,
 	) -> Self {
 		ImageEffectHandle {
 			inner,
 			property,
 			image_effect,
+			image_effect_opengl_render,
 			parameter,
 		}
 	}
@@ -173,6 +182,40 @@ where
 		suite_fn!(paramGetValueAtTime in self.parameter; self.inner, time, &mut value as *mut T)?;
 		Ok(value)
 	}
+
+	pub fn set_value(&self, value: T) -> Result<()> {
+		suite_fn!(paramSetValue in self.parameter; self.inner, value)?;
+		Ok(())
+	}
+
+	pub fn set_value_at_time(&self, time: Time, value: T) -> Result<()> {
+		suite_fn!(paramSetValueAtTime in self.parameter; self.inner, time, value)?;
+		Ok(())
+	}
+
+	pub fn get_num_keys(&self) -> Result<u32> {
+		let mut value: u32 = 0;
+		suite_fn!(paramGetNumKeys in self.parameter; self.inner, &mut value as *mut u32)?;
+		Ok(value)
+	}
+	pub fn get_key_time(&self, nth_key: u32) -> Result<Time> {
+		let mut time: Time = Time::default();
+		suite_fn!(paramGetKeyTime in self.parameter; self.inner, nth_key, &mut time as *mut Time)?;
+		Ok(time)
+	}
+	pub fn get_key_index(&self, time: Time, direction: i32) -> Result<i32> {
+		let mut value: i32 = 0;
+		suite_fn!(paramGetKeyIndex in self.parameter; self.inner, time, direction, &mut value as *mut i32)?;
+		Ok(value)
+	}
+	pub fn delete_key(&self, time: Time) -> Result<()> {
+		suite_fn!(paramDeleteKey in self.parameter; self.inner, time)?;
+		Ok(())
+	}
+	pub fn delete_all_keys(&self) -> Result<()> {
+		suite_fn!(paramDeleteAllKeys in self.parameter; self.inner)?;
+		Ok(())
+	}
 }
 
 impl ParamHandle<Bool> {
@@ -187,6 +230,50 @@ impl ParamHandle<Bool> {
 		suite_fn!(paramGetValueAtTime in self.parameter; self.inner, time, &mut value as *mut Int)?;
 		Ok(value != 0)
 	}
+
+	pub fn set_value(&self, value: Bool) -> Result<()> {
+		suite_fn!(paramSetValue in self.parameter; self.inner, value as Int)?;
+		Ok(())
+	}
+
+	pub fn set_value_at_time(&self, time: Time, value: Bool) -> Result<()> {
+		suite_fn!(paramSetValueAtTime in self.parameter; self.inner, time, value as Int)?;
+		Ok(())
+	}
+}
+
+impl ParamHandle<String> {
+	pub fn get_value(&self) -> Result<String> {
+		let mut value: CharPtr = std::ptr::null();
+		suite_fn!(paramGetValue in self.parameter; self.inner, &mut value as *mut CharPtr)?;
+		if value.is_null() {
+			Ok(String::new())
+		} else {
+			unsafe { std::ffi::CStr::from_ptr(value) }.to_str().map(|s| s.to_owned()).map_err(|e| e.into())
+		}
+	}
+
+	pub fn get_value_at_time(&self, time: Time) -> Result<String> {
+		let mut value: CharPtr = std::ptr::null();
+		suite_fn!(paramGetValueAtTime in self.parameter; self.inner, time, &mut value as *mut CharPtr)?;
+		if value.is_null() {
+			Ok(String::new())
+		} else {
+			unsafe { std::ffi::CStr::from_ptr(value) }.to_str().map(|s| s.to_owned()).map_err(|e| e.into())
+		}
+	}
+
+	pub fn set_value(&self, value: String) -> Result<()> {
+		let ptr = std::ffi::CString::new(value)?;
+		suite_fn!(paramSetValue in self.parameter; self.inner, ptr.as_ptr() as *const CharPtr)?;
+		Ok(())
+	}
+
+	pub fn set_value_at_time(&self, time: Time, value: String) -> Result<()> {
+		let ptr = std::ffi::CString::new(value)?;
+		suite_fn!(paramSetValueAtTime in self.parameter; self.inner, time, ptr.as_ptr() as *const CharPtr)?;
+		Ok(())
+	}
 }
 
 impl ClipInstance {
@@ -195,12 +282,14 @@ impl ClipInstance {
 		inner_properties: OfxPropertySetHandle,
 		property: Rc<OfxPropertySuiteV1>,
 		image_effect: Rc<OfxImageEffectSuiteV1>,
+		image_effect_opengl_render: Option<Rc<OfxImageEffectOpenGLRenderSuiteV1>>,
 	) -> Self {
 		ClipInstance {
 			inner,
 			inner_properties,
 			property,
 			image_effect,
+			image_effect_opengl_render,
 		}
 	}
 
@@ -234,7 +323,48 @@ impl ClipInstance {
 			image,
 			self.property.clone(),
 			self.image_effect.clone(),
+			self.image_effect_opengl_render.clone(),
+			false
 		)))
+	}
+
+	pub fn load_texture(&self, time: Time, region: Option<RectD>) -> Result<Rc<Image>> {
+		if let Some(suite) = self.image_effect_opengl_render.as_ref() {
+			let mut image: OfxPropertySetHandle = std::ptr::null_mut();
+			let region_ptr = region
+				.as_ref()
+				.map(|m| m as *const RectD)
+				.unwrap_or(std::ptr::null());
+			suite_fn!(clipLoadTexture in suite; self.inner, time, std::ptr::null(), region_ptr, &mut image as *mut OfxPropertySetHandle)?;
+			Ok(Rc::new(Image::new(
+				image,
+				self.property.clone(),
+				self.image_effect.clone(),
+				self.image_effect_opengl_render.clone(),
+				true
+			)))
+		} else {
+			Err(Error::InvalidSuite)
+		}
+	}
+	pub fn load_texture_mut(&self, time: Time, region: Option<RectD>) -> Result<Rc<RefCell<Image>>> {
+		if let Some(suite) = self.image_effect_opengl_render.as_ref() {
+			let mut image: OfxPropertySetHandle = std::ptr::null_mut();
+			let region_ptr = region
+				.as_ref()
+				.map(|m| m as *const RectD)
+				.unwrap_or(std::ptr::null());
+			suite_fn!(clipLoadTexture in suite; self.inner, time, std::ptr::null(), region_ptr, &mut image as *mut OfxPropertySetHandle)?;
+			Ok(Rc::new(RefCell::new(Image::new(
+				image,
+				self.property.clone(),
+				self.image_effect.clone(),
+				self.image_effect_opengl_render.clone(),
+				true
+			))))
+		} else {
+			Err(Error::InvalidSuite)
+		}
 	}
 
 	pub fn get_image_rect_mut(
@@ -252,6 +382,8 @@ impl ClipInstance {
 			image,
 			self.property.clone(),
 			self.image_effect.clone(),
+			self.image_effect_opengl_render.clone(),
+			false
 		))))
 	}
 }
@@ -268,11 +400,15 @@ impl Image {
 		inner: OfxPropertySetHandle,
 		property: Rc<OfxPropertySuiteV1>,
 		image_effect: Rc<OfxImageEffectSuiteV1>,
+		image_effect_opengl_render: Option<Rc<OfxImageEffectOpenGLRenderSuiteV1>>,
+		is_texture: bool
 	) -> Self {
 		Image {
 			inner,
 			property,
 			image_effect,
+			image_effect_opengl_render,
+			is_texture,
 		}
 	}
 
@@ -311,7 +447,16 @@ impl Image {
 
 	fn drop_image(&mut self) -> Result<()> {
 		debug!("Releasing data for ImageHandle {:?}", self.inner);
-		suite_fn!(clipReleaseImage in self.image_effect; self.inner)
+		if self.is_texture {
+			if let Some(suite) = self.image_effect_opengl_render.as_ref() {
+				suite_fn!(clipFreeTexture in suite; self.inner)?;
+				Ok(())
+			} else {
+				Err(Error::InvalidSuite)
+			}
+		} else {
+			suite_fn!(clipReleaseImage in self.image_effect; self.inner)
+		}
 	}
 }
 
@@ -411,8 +556,11 @@ properties_newtype!(EndSequenceRenderInArgs);
 properties_newtype!(ParamDouble);
 properties_newtype!(ParamInt);
 properties_newtype!(ParamBoolean);
+properties_newtype!(ParamString);
 properties_newtype!(ParamPage);
 properties_newtype!(ParamGroup);
+properties_newtype!(ParamPushButton);
+properties_newtype!(ParamChoice);
 
 properties_newtype!(ParameterSet);
 
@@ -478,6 +626,7 @@ impl ImageEffectHandle {
 			clip_properties,
 			self.property.clone(),
 			self.image_effect.clone(),
+			self.image_effect_opengl_render.clone(),
 		))
 	}
 
@@ -639,12 +788,24 @@ impl ParamSetHandle {
 		self.param_define(ParamType::Boolean, name)
 	}
 
+	pub fn param_define_string(&mut self, name: &str) -> Result<ParamString> {
+		self.param_define(ParamType::String, name)
+	}
+
 	pub fn param_define_group(&mut self, name: &str) -> Result<ParamGroup> {
 		self.param_define(ParamType::Group, name)
 	}
 
 	pub fn param_define_page(&mut self, name: &str) -> Result<ParamPage> {
 		self.param_define(ParamType::Page, name)
+	}
+
+	pub fn param_define_button(&mut self, name: &str) -> Result<ParamPushButton> {
+		self.param_define(ParamType::PushButton, name)
+	}
+
+	pub fn param_define_choice(&mut self, name: &str) -> Result<ParamChoice> {
+		self.param_define(ParamType::Choice, name)
 	}
 }
 
@@ -696,7 +857,7 @@ mod tests {
 	fn prop_host() {
 		let mut handle = EffectInstance(PropertySetHandle::empty());
 
-		handle.get::<property::Type::Property>();
+		handle.get::<property::TypeProp::Property>();
 		handle.get::<property::IsBackground::Property>();
 	}
 }

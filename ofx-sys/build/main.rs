@@ -12,7 +12,7 @@ fn main() {
 		.clang_arg("-I./native/openfx/include")
 		.clang_arg("-I./../../native/openfx/include")
 		.rust_target(bindgen::RustTarget::Nightly)
-		.rustfmt_bindings(true)
+		.formatter(bindgen::Formatter::Rustfmt)
 		.header("build/wrapper.h")
 		.generate()
 		.expect("Unable to generate bindings");

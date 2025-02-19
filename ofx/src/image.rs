@@ -260,12 +260,7 @@ macro_rules! pixel_format_rgba {
 				b: Self::ChannelValue,
 				a: Self::ChannelValue,
 			) -> Self {
-				let mut instance: $rgba = unsafe { std::mem::uninitialized() };
-				instance.r = r;
-				instance.g = g;
-				instance.b = b;
-				instance.a = a;
-				instance
+				Self { r, g, b, a }
 			}
 
 			#[inline]
@@ -430,19 +425,23 @@ where
 	}
 
 	#[inline]
-	fn byte_offset(&self, x: Int, y: Int) -> isize {
+	pub fn byte_offset(&self, x: Int, y: Int) -> isize {
 		(y - self.bounds.y1) as isize * self.row_bytes + (x - self.bounds.x1) as isize
 	}
 
-	fn bounds(&self) -> RectI {
+	pub fn bounds(&self) -> RectI {
 		self.bounds
 	}
 
-	fn bytes(&self) -> usize {
+	pub fn stride_bytes(&self) -> isize {
+		self.row_bytes
+	}
+
+	pub fn bytes(&self) -> usize {
 		self.row_bytes.abs() as usize * (self.bounds.y2 - self.bounds.y1) as usize
 	}
 
-	fn dimensions(&self) -> (u32, u32) {
+	pub fn dimensions(&self) -> (u32, u32) {
 		(
 			(self.bounds.x2 - self.bounds.x1) as u32,
 			(self.bounds.y2 - self.bounds.y1) as u32,
@@ -453,14 +452,14 @@ where
 		self.t_size
 	}
 
-	fn ptr(&self, offset: isize) -> *const u8 {
+	pub fn ptr(&self, offset: isize) -> *const u8 {
 		unsafe {
 			let ptr: *const u8 = &*self.data;
 			ptr.offset(offset)
 		}
 	}
 
-	fn ptr_mut(&mut self, offset: isize) -> *mut u8 {
+	pub fn ptr_mut(&mut self, offset: isize) -> *mut u8 {
 		unsafe {
 			let ptr: *mut u8 = &mut *self.data;
 			ptr.offset(offset)
@@ -601,6 +600,10 @@ where
 		}
 	}
 
+	pub fn data(&self) -> ImageBuffer<T> {
+		self.data.clone()
+	}
+
 	pub fn row(&self, y: Int) -> &[T] {
 		self.data.row(y)
 	}
@@ -623,6 +626,10 @@ where
 
 	pub fn row(&mut self, y: Int) -> &mut [T] {
 		self.data.row_mut(y)
+	}
+
+	pub fn data(&mut self) -> ImageBuffer<T> {
+		self.data.clone()
 	}
 
 	pub fn row_range(&mut self, x1: Int, x2: Int, y: Int) -> &mut [T] {

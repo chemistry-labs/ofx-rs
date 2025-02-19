@@ -53,14 +53,14 @@ macro_rules! identified_enum {
 		impl IdentifiedEnum for $name {
 			fn to_bytes(&self) -> &'static [u8] {
 				match *self {
-					$($name::$key => concat_idents!(kOfx, $name, $key)),
+					$($name::$key => paste::paste! { [<kOfx $name $key>] }),
 					*
 				}
 			}
 
 			fn from_bytes(ofx_name: &[u8]) -> Option<Self> {
 				// TODO: use PHF or some sort of hashing
-				$(if ofx_name == &concat_idents!(kOfx, $name, $key)[..] { Some($name::$key) } else)
+				$(if ofx_name == &paste::paste! { [<kOfx $name $key>] }[..] { Some($name::$key) } else)
 				*
 				{ None }
 			}
@@ -83,7 +83,8 @@ identified_enum! {
 identified_enum! {
 	pub enum ImageEffectContext {
 		Filter,
-		General
+		General,
+		Retimer
 	}
 }
 
@@ -91,12 +92,17 @@ impl ImageEffectContext {
 	pub fn is_general(self) -> bool {
 		self == ImageEffectContext::General
 	}
+	pub fn is_retimer(self) -> bool {
+		self == ImageEffectContext::Retimer
+	}
 }
 
 identified_enum! {
 	pub enum BitDepth {
+		None,
 		Byte,
 		Short,
+		Half,
 		Float
 	}
 }
@@ -104,8 +110,10 @@ identified_enum! {
 impl BitDepth {
 	pub fn bits(self) -> usize {
 		match self {
+			BitDepth::None => 0,
 			BitDepth::Byte => 8,
 			BitDepth::Short => 16,
+			BitDepth::Half => 16,
 			BitDepth::Float => 32,
 		}
 	}
@@ -191,21 +199,21 @@ identified_enum! {
 }
 
 identified_enum! {
-	pub enum Image {
-		Opaque,
-		PreMultiplied,
-		UnPreMultiplied
+	pub enum ImageType {
+		Opaque => kOfxImageOpaque,
+		PreMultiplied => kOfxImagePreMultiplied,
+		UnPreMultiplied => kOfxImageUnPreMultiplied
 	}
 }
 
 identified_enum! {
-	pub enum ParamString {
-		IsSingleLine,
-		IsMultiLine,
-		IsFilePath,
-		IsDirectoryPath,
-		IsLabel,
-		IsRichTextFormat
+	pub enum ParamStringType {
+		SingleLine => kOfxParamStringIsSingleLine,
+		MultiLine => kOfxParamStringIsMultiLine,
+		FilePath => kOfxParamStringIsFilePath,
+		DirectoryPath => kOfxParamStringIsDirectoryPath,
+		Label => kOfxParamStringIsLabel,
+		RichTextFormat => kOfxParamStringIsRichTextFormat
 	}
 }
 
@@ -246,6 +254,7 @@ mod tests {
 	fn auto_enum_names() {
 		assert!(ImageEffectContext::Filter.to_bytes() == kOfxImageEffectContextFilter);
 		assert!(ImageEffectContext::General.to_bytes() == kOfxImageEffectContextGeneral);
+		assert!(ImageEffectContext::Retimer.to_bytes() == kOfxImageEffectContextRetimer);
 	}
 
 	#[test]
@@ -259,8 +268,16 @@ mod tests {
 				== Some(ImageEffectContext::General)
 		);
 		assert!(
+			ImageEffectContext::from_bytes(kOfxImageEffectContextRetimer)
+				== Some(ImageEffectContext::Retimer)
+		);
+		assert!(
 			ImageEffectContext::from_bytes(b"OfxImageEffectContextGeneral\0")
 				== Some(ImageEffectContext::General)
+		);
+		assert!(
+			ImageEffectContext::from_bytes(b"OfxImageEffectContextRetimer\0")
+				== Some(ImageEffectContext::Retimer)
 		);
 		let str_value =
 			unsafe { CStr::from_bytes_with_nul_unchecked(b"OfxImageEffectContextGeneral\0") };
